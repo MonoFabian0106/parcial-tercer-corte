@@ -1,0 +1,17 @@
+{
+    "LambdaFunctionConfigurations": [
+        {
+            "Id": "shopstream-ingest-trigger",
+            "LambdaFunctionArn": "arn:aws:lambda:us-east-1:980511866105:function:shopstream-ingest-validator",
+            "Events": ["s3:ObjectCreated:*"],
+            "Filter": {
+                "Key": {
+                    "FilterRules": [
+                        {"Name": "prefix", "Value": "events/"},
+                        {"Name": "suffix", "Value": ".jsonl"}
+                    ]
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,101 @@
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "x": 0, "y": 0, "width": 12, "height": 6,
+      "properties": {
+        "metrics": [
+          ["ShopStream/Ingest", "FilesProcessed", "SourceBucket", "shopstream-raw-mf0106", {"stat": "Sum", "label": "Archivos procesados"}]
+        ],
+        "view": "timeSeries", "stacked": false,
+        "region": "us-east-1",
+        "title": "Archivos procesados (suma)",
+        "period": 300, "yAxis": {"left": {"min": 0}}
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12, "y": 0, "width": 12, "height": 6,
+      "properties": {
+        "metrics": [
+          ["ShopStream/Ingest", "RecordsValid", "SourceBucket", "shopstream-raw-mf0106", {"stat": "Sum", "label": "Válidos"}],
+          [".", "RecordsInvalid", ".", ".", {"stat": "Sum", "label": "Inválidos"}]
+        ],
+        "view": "timeSeries", "stacked": false,
+        "region": "us-east-1",
+        "title": "Registros válidos vs inválidos",
+        "period": 300, "yAxis": {"left": {"min": 0}}
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0, "y": 6, "width": 8, "height": 6,
+      "properties": {
+        "metrics": [
+          ["ShopStream/Ingest", "InvalidRate", "SourceBucket", "shopstream-raw-mf0106", {"stat": "Average"}]
+        ],
+        "view": "timeSeries", "stacked": false,
+        "region": "us-east-1",
+        "title": "Tasa de inválidos (%)",
+        "period": 300, "yAxis": {"left": {"min": 0, "max": 100}},
+        "annotations": {
+          "horizontal": [{"value": 50, "label": "Umbral corrupción", "color": "#d62728"}]
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 8, "y": 6, "width": 8, "height": 6,
+      "properties": {
+        "metrics": [
+          ["ShopStream/Ingest", "BytesProcessed", "SourceBucket", "shopstream-raw-mf0106", {"stat": "Sum"}]
+        ],
+        "view": "timeSeries", "stacked": false,
+        "region": "us-east-1",
+        "title": "Bytes procesados",
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "x": 16, "y": 6, "width": 8, "height": 6,
+      "properties": {
+        "metrics": [
+          ["ShopStream/Ingest", "ProcessingDurationMs", "SourceBucket", "shopstream-raw-mf0106", {"stat": "Average", "label": "Promedio"}],
+          ["...", {"stat": "Maximum", "label": "Máximo"}]
+        ],
+        "view": "timeSeries", "stacked": false,
+        "region": "us-east-1",
+        "title": "Duración procesamiento (ms)",
+        "period": 300
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0, "y": 12, "width": 12, "height": 6,
+      "properties": {
+        "metrics": [
+          ["ShopStream/Ingest", "EventsByType", "SourceBucket", "shopstream-raw-mf0106", "EventType", "page_view", {"stat": "Sum"}],
+          ["...", "click", {"stat": "Sum"}],
+          ["...", "search", {"stat": "Sum"}],
+          ["...", "product_view", {"stat": "Sum"}],
+          ["...", "cart_event", {"stat": "Sum"}]
+        ],
+        "view": "timeSeries", "stacked": true,
+        "region": "us-east-1",
+        "title": "Eventos por tipo (stacked)",
+        "period": 300
+      }
+    },
+    {
+      "type": "log",
+      "x": 12, "y": 12, "width": 12, "height": 6,
+      "properties": {
+        "query": "SOURCE '/aws/lambda/shopstream-ingest-validator' | fields @timestamp, @message | filter @message like /Done|Quarantine|ERROR|exceeds/ | sort @timestamp desc | limit 20",
+        "region": "us-east-1",
+        "title": "Logs recientes (Done / Quarantine / Errores)",
+        "view": "table"
+      }
+    }
+  ]
+}

@@ -18,7 +18,7 @@ ENV/
 # UV
 .uv-cache/
 
-# Distribution / packaging
+# Distribution / packaging (incluye builds de Lambda)
 build/
 dist/
 *.whl
