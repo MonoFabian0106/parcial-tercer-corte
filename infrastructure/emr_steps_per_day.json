@@ -1,0 +1,80 @@
+[
+  {
+    "Type": "Spark",
+    "Name": "shopstream-etl-2026-05-16",
+    "ActionOnFailure": "CONTINUE",
+    "Args": [
+      "--deploy-mode", "cluster",
+      "--py-files", "s3://shopstream-processed-mf0106/code/spark_jobs.zip",
+      "s3://shopstream-processed-mf0106/code/etl_main.py",
+      "--input", "s3://shopstream-raw-mf0106/events",
+      "--output", "s3://shopstream-processed-mf0106/metrics",
+      "--date", "2026-05-16"
+    ]
+  },
+  {
+    "Type": "Spark",
+    "Name": "shopstream-etl-2026-05-17",
+    "ActionOnFailure": "CONTINUE",
+    "Args": [
+      "--deploy-mode", "cluster",
+      "--py-files", "s3://shopstream-processed-mf0106/code/spark_jobs.zip",
+      "s3://shopstream-processed-mf0106/code/etl_main.py",
+      "--input", "s3://shopstream-raw-mf0106/events",
+      "--output", "s3://shopstream-processed-mf0106/metrics",
+      "--date", "2026-05-17"
+    ]
+  },
+  {
+    "Type": "Spark",
+    "Name": "shopstream-etl-2026-05-18",
+    "ActionOnFailure": "CONTINUE",
+    "Args": [
+      "--deploy-mode", "cluster",
+      "--py-files", "s3://shopstream-processed-mf0106/code/spark_jobs.zip",
+      "s3://shopstream-processed-mf0106/code/etl_main.py",
+      "--input", "s3://shopstream-raw-mf0106/events",
+      "--output", "s3://shopstream-processed-mf0106/metrics",
+      "--date", "2026-05-18"
+    ]
+  },
+  {
+    "Type": "Spark",
+    "Name": "shopstream-etl-2026-05-19",
+    "ActionOnFailure": "CONTINUE",
+    "Args": [
+      "--deploy-mode", "cluster",
+      "--py-files", "s3://shopstream-processed-mf0106/code/spark_jobs.zip",
+      "s3://shopstream-processed-mf0106/code/etl_main.py",
+      "--input", "s3://shopstream-raw-mf0106/events",
+      "--output", "s3://shopstream-processed-mf0106/metrics",
+      "--date", "2026-05-19"
+    ]
+  },
+  {
+    "Type": "Spark",
+    "Name": "shopstream-etl-2026-05-20",
+    "ActionOnFailure": "CONTINUE",
+    "Args": [
+      "--deploy-mode", "cluster",
+      "--py-files", "s3://shopstream-processed-mf0106/code/spark_jobs.zip",
+      "s3://shopstream-processed-mf0106/code/etl_main.py",
+      "--input", "s3://shopstream-raw-mf0106/events",
+      "--output", "s3://shopstream-processed-mf0106/metrics",
+      "--date", "2026-05-20"
+    ]
+  },
+  {
+    "Type": "Spark",
+    "Name": "shopstream-etl-2026-05-21",
+    "ActionOnFailure": "CONTINUE",
+    "Args": [
+      "--deploy-mode", "cluster",
+      "--py-files", "s3://shopstream-processed-mf0106/code/spark_jobs.zip",
+      "s3://shopstream-processed-mf0106/code/etl_main.py",
+      "--input", "s3://shopstream-raw-mf0106/events",
+      "--output", "s3://shopstream-processed-mf0106/metrics",
+      "--date", "2026-05-21"
+    ]
+  }
+]

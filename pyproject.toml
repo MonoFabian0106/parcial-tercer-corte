@@ -43,6 +43,8 @@ dev = [
     "black>=24.0.0",
     "mypy>=1.9.0",
     "ipykernel>=6.29.0",
+    "pyarrow>=24.0.0",
+    "s3fs>=0.4.2",
 ]
 
 [tool.ruff]

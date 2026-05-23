@@ -1,0 +1,15 @@
+[
+  {
+    "Type": "Spark",
+    "Name": "shopstream-etl-day",
+    "ActionOnFailure": "CONTINUE",
+    "Args": [
+      "--deploy-mode", "cluster",
+      "--py-files", "s3://shopstream-processed-mf0106/code/spark_jobs.zip",
+      "s3://shopstream-processed-mf0106/code/etl_main.py",
+      "--input", "s3://shopstream-raw-mf0106/events",
+      "--output", "s3://shopstream-processed-mf0106/metrics",
+      "--date", "2026-05-22"
+    ]
+  }
+]
