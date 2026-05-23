@@ -1,0 +1,71 @@
+[project]
+name = "shopstream-pipeline"
+version = "0.1.0"
+description = "Pipeline de datos batch en AWS para analizar comportamiento de usuarios de ShopStream"
+requires-python = ">=3.11,<3.12"
+readme = "README.md"
+authors = [
+    { name = "Fabian", email = "rinsuar04@gmail.com" }
+]
+dependencies = [
+    "boto3>=1.34.0",
+    "pandas>=2.2.0",
+    "numpy>=1.26.0",
+    "jsonschema>=4.21.0",
+    "python-dateutil>=2.9.0",
+]
+
+[project.optional-dependencies]
+generation = [
+    "faker>=24.0.0",
+]
+lambda-ingest = [
+    "aws-lambda-powertools>=2.34.0",
+    "jsonschema>=4.21.0",
+]
+spark = [
+    "pyspark==3.5.0",
+]
+api = [
+    "flask>=3.0.0",
+    "zappa>=0.59.0",
+    "psycopg2-binary>=2.9.9",
+    "sqlalchemy>=2.0.0",
+    "marshmallow>=3.21.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "moto[s3,lambda]>=5.0.0",
+    "ruff>=0.3.0",
+    "black>=24.0.0",
+    "mypy>=1.9.0",
+    "ipykernel>=6.29.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "PL", "RUF"]
+ignore = ["PLR0913"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-v --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["data_generation", "lambda_ingest", "spark_jobs", "api"]
+omit = ["tests/*", "**/__init__.py"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
