@@ -1,0 +1,91 @@
+# ============================================================
+# ShopStream — Reglas DQDL para nodo Data Quality en Glue Studio
+# Aplica a cada tabla de métricas antes de cargar a RDS.
+# ============================================================
+
+# ── Reglas comunes a todas las tablas ──────────────────────
+Rules = [
+    # La columna de partición siempre debe existir y tener formato de fecha
+    IsComplete "dt",
+    ColumnDataType "dt" = "DATE",
+
+    # No se permiten filas duplicadas en la clave primaria de negocio
+    IsPrimaryKey "dt"
+]
+
+# ── fact_bounce_rate ────────────────────────────────────────
+# Usar en el job que carga bounce_rate
+Rules = [
+    IsComplete "dt",
+    IsComplete "landing_page_type",
+    IsComplete "total_sessions",
+    IsComplete "bounce_rate",
+    ColumnDataType "dt" = "DATE",
+    ColumnDataType "bounce_rate" = "DOUBLE",
+    ColumnValues "bounce_rate" between 0 and 1,
+    ColumnValues "total_sessions" > 0,
+    ColumnValues "bounce_sessions" >= 0
+]
+
+# ── fact_top_pages ──────────────────────────────────────────
+Rules = [
+    IsComplete "dt",
+    IsComplete "page_url",
+    IsComplete "views",
+    ColumnDataType "dt" = "DATE",
+    ColumnDataType "views" = "INTEGER",
+    ColumnValues "views" > 0,
+    ColumnValues "avg_time_on_page" >= 0
+]
+
+# ── fact_conversion_funnel ──────────────────────────────────
+Rules = [
+    IsComplete "dt",
+    IsComplete "stage",
+    IsComplete "sessions",
+    ColumnDataType "dt" = "DATE",
+    ColumnValues "sessions" >= 0,
+    ColumnValues "conversion_rate_overall" between 0 and 1,
+    ColumnValues "conversion_rate_from_previous" between 0 and 1
+]
+
+# ── fact_product_gap ────────────────────────────────────────
+Rules = [
+    IsComplete "dt",
+    IsComplete "product_id",
+    IsComplete "views",
+    ColumnDataType "dt" = "DATE",
+    ColumnValues "views" >= 0,
+    ColumnValues "cart_adds" >= 0,
+    ColumnValues "gap_score" between 0 and 1
+]
+
+# ── fact_nav_paths ──────────────────────────────────────────
+Rules = [
+    IsComplete "dt",
+    IsComplete "path",
+    IsComplete "sessions",
+    ColumnDataType "dt" = "DATE",
+    ColumnValues "sessions" > 0
+]
+
+# ── fact_device_country ─────────────────────────────────────
+Rules = [
+    IsComplete "dt",
+    IsComplete "device_type",
+    IsComplete "country",
+    IsComplete "page_views",
+    ColumnDataType "dt" = "DATE",
+    ColumnValues "page_views" >= 0,
+    ColumnValues "avg_time_on_page" >= 0
+]
+
+# ── fact_anomalies ──────────────────────────────────────────
+Rules = [
+    IsComplete "dt",
+    IsComplete "session_id",
+    IsComplete "anomaly_type",
+    ColumnDataType "dt" = "DATE",
+    ColumnValues "total_flags" >= 2,
+    ColumnValues "total_events" > 0
+]

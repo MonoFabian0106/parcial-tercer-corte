@@ -1,0 +1,206 @@
+{
+  "Comment": "ShopStream Glue Studio Visual ETL — S3 Parquet (metrics) → RDS PostgreSQL",
+  "Version": "2.0",
+  "JobName": "shopstream-s3-to-rds",
+  "JobDetails": {
+    "IAMRole": "LabRole",
+    "WorkerType": "G.1X",
+    "NumberOfWorkers": 2,
+    "Timeout": 30,
+    "GlueVersion": "4.0",
+    "DefaultArguments": {
+      "--job-language": "python",
+      "--job-bookmark-option": "job-bookmark-disable",
+      "--enable-metrics": "true",
+      "--enable-spark-ui": "true",
+      "--spark-event-logs-path": "s3://shopstream-processed-mf0106/glue-spark-logs/"
+    }
+  },
+  "Nodes": [
+    {
+      "NodeId": "source_bounce_rate",
+      "Type": "DataSource",
+      "Name": "S3 bounce_rate",
+      "Config": {
+        "NodeType": "GlueDataCatalog",
+        "Database": "shopstream_metrics_db",
+        "Table": "bounce_rate"
+      }
+    },
+    {
+      "NodeId": "schema_bounce_rate",
+      "Type": "Transform",
+      "Name": "ChangeSchema bounce_rate",
+      "Parents": ["source_bounce_rate"],
+      "Config": {
+        "NodeType": "ApplyMapping",
+        "Mappings": [
+          {"SourcePath": "dt",                "SourceType": "string",  "TargetPath": "dt",                "TargetType": "date"},
+          {"SourcePath": "landing_page_type", "SourceType": "string",  "TargetPath": "landing_page_type", "TargetType": "varchar"},
+          {"SourcePath": "total_sessions",    "SourceType": "long",    "TargetPath": "total_sessions",    "TargetType": "integer"},
+          {"SourcePath": "bounce_sessions",   "SourceType": "long",    "TargetPath": "bounce_sessions",   "TargetType": "integer"},
+          {"SourcePath": "bounce_rate",       "SourceType": "double",  "TargetPath": "bounce_rate",       "TargetType": "numeric(6,4)"}
+        ]
+      }
+    },
+    {
+      "NodeId": "dq_bounce_rate",
+      "Type": "Transform",
+      "Name": "DataQuality bounce_rate",
+      "Parents": ["schema_bounce_rate"],
+      "Config": {
+        "NodeType": "EvaluateDataQuality",
+        "Ruleset": "Rules = [ IsComplete \"dt\", IsComplete \"landing_page_type\", ColumnDataType \"dt\" = \"DATE\", ColumnDataType \"bounce_rate\" = \"DOUBLE\", ColumnValues \"bounce_rate\" between 0 and 1, IsComplete \"total_sessions\", ColumnValues \"total_sessions\" > 0 ]",
+        "Output": "primaryInput",
+        "FailureThreshold": 1.0,
+        "PublishingOptions": {
+          "EvaluationContext": "bounce_rate_dq",
+          "ResultsS3Prefix": "s3://shopstream-processed-mf0106/glue-dq-results/",
+          "CloudWatchMetricsEnabled": true,
+          "ResultsPublishingEnabled": true
+        }
+      }
+    },
+    {
+      "NodeId": "target_bounce_rate",
+      "Type": "DataSink",
+      "Name": "RDS fact_bounce_rate",
+      "Parents": ["dq_bounce_rate"],
+      "Config": {
+        "NodeType": "DirectJDBCSource",
+        "ConnectionName": "shopstream-rds-conn",
+        "Database": "shopstream_dwh",
+        "Table": "fact_bounce_rate",
+        "RedshiftTmpDir": "",
+        "TmpDirIAMRole": "",
+        "UseConnectionProperties": true,
+        "WriteMode": "overwrite"
+      }
+    },
+    {
+      "NodeId": "source_top_pages",
+      "Type": "DataSource",
+      "Name": "S3 top_pages",
+      "Config": {
+        "NodeType": "GlueDataCatalog",
+        "Database": "shopstream_metrics_db",
+        "Table": "top_pages"
+      }
+    },
+    {
+      "NodeId": "schema_top_pages",
+      "Type": "Transform",
+      "Name": "ChangeSchema top_pages",
+      "Parents": ["source_top_pages"],
+      "Config": {
+        "NodeType": "ApplyMapping",
+        "Mappings": [
+          {"SourcePath": "dt",               "SourceType": "string", "TargetPath": "dt",               "TargetType": "date"},
+          {"SourcePath": "page_url",         "SourceType": "string", "TargetPath": "page_url",         "TargetType": "text"},
+          {"SourcePath": "page_type",        "SourceType": "string", "TargetPath": "page_type",        "TargetType": "varchar"},
+          {"SourcePath": "views",            "SourceType": "long",   "TargetPath": "views",            "TargetType": "integer"},
+          {"SourcePath": "avg_time_on_page", "SourceType": "double", "TargetPath": "avg_time_on_page", "TargetType": "numeric(10,2)"},
+          {"SourcePath": "p95_time_on_page", "SourceType": "double", "TargetPath": "p95_time_on_page", "TargetType": "numeric(10,2)"}
+        ]
+      }
+    },
+    {
+      "NodeId": "dq_top_pages",
+      "Type": "Transform",
+      "Name": "DataQuality top_pages",
+      "Parents": ["schema_top_pages"],
+      "Config": {
+        "NodeType": "EvaluateDataQuality",
+        "Ruleset": "Rules = [ IsComplete \"dt\", IsComplete \"page_url\", ColumnDataType \"dt\" = \"DATE\", ColumnValues \"views\" > 0, ColumnValues \"avg_time_on_page\" >= 0 ]",
+        "Output": "primaryInput",
+        "FailureThreshold": 1.0,
+        "PublishingOptions": {
+          "EvaluationContext": "top_pages_dq",
+          "ResultsS3Prefix": "s3://shopstream-processed-mf0106/glue-dq-results/",
+          "CloudWatchMetricsEnabled": true,
+          "ResultsPublishingEnabled": true
+        }
+      }
+    },
+    {
+      "NodeId": "target_top_pages",
+      "Type": "DataSink",
+      "Name": "RDS fact_top_pages",
+      "Parents": ["dq_top_pages"],
+      "Config": {
+        "NodeType": "DirectJDBCSource",
+        "ConnectionName": "shopstream-rds-conn",
+        "Database": "shopstream_dwh",
+        "Table": "fact_top_pages",
+        "UseConnectionProperties": true,
+        "WriteMode": "overwrite"
+      }
+    },
+    {
+      "NodeId": "source_anomalies",
+      "Type": "DataSource",
+      "Name": "S3 anomalies",
+      "Config": {
+        "NodeType": "GlueDataCatalog",
+        "Database": "shopstream_metrics_db",
+        "Table": "anomalies"
+      }
+    },
+    {
+      "NodeId": "schema_anomalies",
+      "Type": "Transform",
+      "Name": "ChangeSchema anomalies",
+      "Parents": ["source_anomalies"],
+      "Config": {
+        "NodeType": "ApplyMapping",
+        "Mappings": [
+          {"SourcePath": "dt",                         "SourceType": "string", "TargetPath": "dt",                         "TargetType": "date"},
+          {"SourcePath": "session_id",                 "SourceType": "string", "TargetPath": "session_id",                 "TargetType": "varchar"},
+          {"SourcePath": "user_id",                    "SourceType": "string", "TargetPath": "user_id",                    "TargetType": "varchar"},
+          {"SourcePath": "total_events",               "SourceType": "long",   "TargetPath": "total_events",               "TargetType": "integer"},
+          {"SourcePath": "session_duration_seconds",   "SourceType": "double", "TargetPath": "session_duration_seconds",   "TargetType": "numeric(12,2)"},
+          {"SourcePath": "unique_pages",               "SourceType": "long",   "TargetPath": "unique_pages",               "TargetType": "integer"},
+          {"SourcePath": "events_per_minute",          "SourceType": "double", "TargetPath": "events_per_minute",          "TargetType": "numeric(10,4)"},
+          {"SourcePath": "z_total_events",             "SourceType": "double", "TargetPath": "z_total_events",             "TargetType": "numeric(8,3)"},
+          {"SourcePath": "z_session_duration_seconds", "SourceType": "double", "TargetPath": "z_session_duration_seconds", "TargetType": "numeric(8,3)"},
+          {"SourcePath": "z_unique_pages",             "SourceType": "double", "TargetPath": "z_unique_pages",             "TargetType": "numeric(8,3)"},
+          {"SourcePath": "z_events_per_minute",        "SourceType": "double", "TargetPath": "z_events_per_minute",        "TargetType": "numeric(8,3)"},
+          {"SourcePath": "total_flags",                "SourceType": "long",   "TargetPath": "total_flags",                "TargetType": "smallint"},
+          {"SourcePath": "anomaly_type",               "SourceType": "string", "TargetPath": "anomaly_type",               "TargetType": "varchar"}
+        ]
+      }
+    },
+    {
+      "NodeId": "dq_anomalies",
+      "Type": "Transform",
+      "Name": "DataQuality anomalies",
+      "Parents": ["schema_anomalies"],
+      "Config": {
+        "NodeType": "EvaluateDataQuality",
+        "Ruleset": "Rules = [ IsComplete \"dt\", IsComplete \"session_id\", IsComplete \"anomaly_type\", ColumnDataType \"dt\" = \"DATE\", ColumnValues \"total_flags\" >= 2, ColumnValues \"total_events\" > 0 ]",
+        "Output": "primaryInput",
+        "FailureThreshold": 1.0,
+        "PublishingOptions": {
+          "EvaluationContext": "anomalies_dq",
+          "ResultsS3Prefix": "s3://shopstream-processed-mf0106/glue-dq-results/",
+          "CloudWatchMetricsEnabled": true,
+          "ResultsPublishingEnabled": true
+        }
+      }
+    },
+    {
+      "NodeId": "target_anomalies",
+      "Type": "DataSink",
+      "Name": "RDS fact_anomalies",
+      "Parents": ["dq_anomalies"],
+      "Config": {
+        "NodeType": "DirectJDBCSource",
+        "ConnectionName": "shopstream-rds-conn",
+        "Database": "shopstream_dwh",
+        "Table": "fact_anomalies",
+        "UseConnectionProperties": true,
+        "WriteMode": "overwrite"
+      }
+    }
+  ]
+}
