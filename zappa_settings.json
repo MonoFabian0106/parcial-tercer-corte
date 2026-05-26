@@ -4,7 +4,7 @@
         "project_name": "shopstream-api",
         "runtime": "python3.11",
         "aws_region": "us-east-1",
-        "profile_name": "default",
+        "profile_name": null,
         "s3_bucket": "shopstream-zappa-deploys-mf0106",
 
         "role_name": "LabRole",
