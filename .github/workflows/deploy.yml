@@ -1,0 +1,158 @@
+name: deploy
+
+# Trigger manual: las credenciales del AWS Academy Learner Lab caducan cada
+# ~4 horas y no se pueden renovar automáticamente. El desarrollador debe
+# refrescar los secretos antes de cada deploy y disparar el workflow a mano.
+#
+# Antes de correrlo, actualiza estos secretos en
+# Settings → Secrets and variables → Actions:
+#   AWS_ACCESS_KEY_ID
+#   AWS_SECRET_ACCESS_KEY
+#   AWS_SESSION_TOKEN
+#   DB_PASSWORD            (para inyectar en la Lambda de la API)
+on:
+  workflow_dispatch:
+    inputs:
+      component:
+        description: "Componente a desplegar"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - lambda-ingest
+          - spark-script
+          - api
+
+env:
+  AWS_REGION: us-east-1
+  PROCESSED_BUCKET: shopstream-processed-mf0106
+  INGEST_FUNCTION_NAME: shopstream-ingest-validator
+  API_FUNCTION_NAME: shopstream-api-dev
+
+jobs:
+  deploy-lambda-ingest:
+    name: Lambda de ingesta
+    if: github.event.inputs.component == 'all' || github.event.inputs.component == 'lambda-ingest'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python 3.11
+        run: uv python install 3.11
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Empaquetar Lambda (linux x86_64)
+        run: |
+          mkdir -p build/lambda dist
+          uv pip install \
+            --python-version 3.11 \
+            --python-platform x86_64-manylinux2014 \
+            --target build/lambda \
+            jsonschema
+          cp -r lambda_ingest build/lambda/lambda_ingest
+          mkdir -p build/lambda/data_generation
+          cp data_generation/__init__.py build/lambda/data_generation/__init__.py
+          cp data_generation/schemas.py build/lambda/data_generation/schemas.py
+          find build/lambda -name "__pycache__" -type d -exec rm -rf {} + || true
+          find build/lambda -name "*.pyc" -delete || true
+          find build/lambda -name "*.dist-info" -type d -exec rm -rf {} + || true
+          cd build/lambda && zip -qr ../../dist/shopstream-ingest-validator.zip .
+
+      - name: Update Lambda function code
+        run: |
+          aws lambda update-function-code \
+            --function-name "$INGEST_FUNCTION_NAME" \
+            --zip-file fileb://dist/shopstream-ingest-validator.zip \
+            --region "$AWS_REGION"
+
+      - name: Esperar a que la Lambda quede Active
+        run: aws lambda wait function-updated --function-name "$INGEST_FUNCTION_NAME" --region "$AWS_REGION"
+
+  deploy-spark-script:
+    name: Sync script Spark a S3
+    if: github.event.inputs.component == 'all' || github.event.inputs.component == 'spark-script'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync spark_jobs/ a s3://${{ env.PROCESSED_BUCKET }}/code/
+        run: |
+          aws s3 sync spark_jobs/ "s3://${PROCESSED_BUCKET}/code/" \
+            --exclude "notebooks/*" \
+            --exclude "__pycache__/*" \
+            --exclude "*.pyc" \
+            --delete
+
+  deploy-api:
+    name: API Flask (Zappa update)
+    if: github.event.inputs.component == 'all' || github.event.inputs.component == 'api'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python 3.11
+        run: uv python install 3.11
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Crear venv slim para Zappa (sin pyspark/pandas pesados)
+        run: |
+          uv venv .venv-zappa --python 3.11
+          uv pip install --python .venv-zappa/bin/python \
+            flask sqlalchemy psycopg2-binary zappa marshmallow
+
+      - name: Zappa update (stage dev)
+        run: |
+          source .venv-zappa/bin/activate
+          zappa update dev
+
+      - name: Inyectar DB_PASSWORD en la Lambda
+        run: |
+          aws lambda update-function-configuration \
+            --function-name "$API_FUNCTION_NAME" \
+            --region "$AWS_REGION" \
+            --environment "Variables={DB_HOST=shopstream-dwh.cvlz1em1qc07.us-east-1.rds.amazonaws.com,DB_PORT=5432,DB_NAME=shopstream_dwh,DB_USER=shopstream_admin,DB_PASSWORD=${{ secrets.DB_PASSWORD }},LOG_LEVEL=INFO}"
+
+      - name: Esperar a que la Lambda quede Active
+        run: aws lambda wait function-updated --function-name "$API_FUNCTION_NAME" --region "$AWS_REGION"
+
+      - name: Smoke test del endpoint /health
+        run: |
+          source .venv-zappa/bin/activate
+          URL=$(zappa status dev | grep "API Gateway URL" | awk '{print $NF}')
+          echo "API URL: $URL"
+          curl -fsS "$URL/health" | tee /dev/stderr | grep -q '"status":"ok"'
