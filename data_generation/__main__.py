@@ -140,10 +140,12 @@ def main(argv: list[str] | None = None) -> int:
                 logger.error("--upload sin bucket: define S3_BUCKET_RAW o pasa --bucket")
                 return 3
             upload_meta = upload_day(out_path, run_date, bucket=bucket)
-            logger.info("Subido: s3://%s/%s (%.1f MB)",
-                        upload_meta["bucket"],
-                        upload_meta["key"],
-                        upload_meta["size_bytes"] / 1e6)
+            logger.info(
+                "Subido: s3://%s/%s (%.1f MB)",
+                upload_meta["bucket"],
+                upload_meta["key"],
+                upload_meta["size_bytes"] / 1e6,
+            )
 
     print(json.dumps(summary, indent=2))
     return 0

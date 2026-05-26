@@ -16,13 +16,17 @@ def compute(events: DataFrame, min_views: int = 50, top_n: int = 50) -> DataFram
     `gap_score = 1 - (cart_adds / views)`. Productos con `views >= min_views`
     para evitar ruido de productos con muy pocas vistas.
     """
-    pv = events.filter(F.col("event_type") == "product_view").groupBy(
-        "dt", "product_id", "category"
-    ).agg(F.count("*").alias("views"))
+    pv = (
+        events.filter(F.col("event_type") == "product_view")
+        .groupBy("dt", "product_id", "category")
+        .agg(F.count("*").alias("views"))
+    )
 
-    carts = events.filter(
-        (F.col("event_type") == "cart_event") & (F.col("action") == "add")
-    ).groupBy("dt", "product_id").agg(F.count("*").alias("cart_adds"))
+    carts = (
+        events.filter((F.col("event_type") == "cart_event") & (F.col("action") == "add"))
+        .groupBy("dt", "product_id")
+        .agg(F.count("*").alias("cart_adds"))
+    )
 
     joined = (
         pv.join(carts, on=["dt", "product_id"], how="left")

@@ -14,9 +14,7 @@ def compute(events: DataFrame) -> DataFrame:
         .agg(
             F.count("*").alias("page_views"),
             F.round(F.avg("time_on_page_seconds"), 2).alias("avg_time_on_page"),
-            F.round(F.percentile_approx("time_on_page_seconds", 0.95), 2).alias(
-                "p95_time_on_page"
-            ),
+            F.round(F.percentile_approx("time_on_page_seconds", 0.95), 2).alias("p95_time_on_page"),
             F.countDistinct("session_id").alias("unique_sessions"),
         )
         .orderBy("dt", "device_type", "country")

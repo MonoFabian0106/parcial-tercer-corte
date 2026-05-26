@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import importlib
-import io
 import json
 
 import boto3
@@ -53,6 +52,7 @@ def aws(monkeypatch):
 
         # Importar handler con los clientes mockeados ya activos
         import lambda_ingest.handler as h
+
         importlib.reload(h)
 
         yield {"s3": s3, "cw": cw, "handler": h}
@@ -123,6 +123,7 @@ class TestHandlerCorruptFile:
         monkeypatch.setenv("MAX_INVALID_RATIO", "0.5")
         # Re-importar para que el handler lea la nueva env var
         import lambda_ingest.handler as h
+
         importlib.reload(h)
 
         lines = ["{bad}"] * 8 + [json.dumps(VALID_PAGE_VIEW)] * 2

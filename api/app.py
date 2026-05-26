@@ -1,4 +1,5 @@
 """Flask app exposing ShopStream DWH metrics. Deployed to Lambda via Zappa."""
+
 from __future__ import annotations
 
 import logging

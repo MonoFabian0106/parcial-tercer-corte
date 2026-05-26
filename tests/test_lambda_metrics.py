@@ -52,17 +52,23 @@ class TestPublishIngestMetrics:
             records_valid=1,
             records_invalid=0,
             duration_ms=1.0,
-            events_by_type={"page_view": 1, "click": 0, "search": 0,
-                            "product_view": 0, "cart_event": 0},
+            events_by_type={
+                "page_view": 1,
+                "click": 0,
+                "search": 0,
+                "product_view": 0,
+                "cart_event": 0,
+            },
         )
         listed = cw.list_metrics(Namespace=DEFAULT_NAMESPACE, MetricName="EventsByType")["Metrics"]
         dimensions_seen = {
-            tuple(sorted((d["Name"], d["Value"]) for d in m["Dimensions"]))
-            for m in listed
+            tuple(sorted((d["Name"], d["Value"]) for d in m["Dimensions"])) for m in listed
         }
         # Debe haber al menos una entrada con EventType=page_view
-        assert any("EventType" in {d for pair in entry for d in pair if isinstance(d, str)}
-                   for entry in dimensions_seen)
+        assert any(
+            "EventType" in {d for pair in entry for d in pair if isinstance(d, str)}
+            for entry in dimensions_seen
+        )
 
     def test_invalid_rate_zero_when_no_records(self, cw):
         publish_ingest_metrics(
@@ -72,7 +78,8 @@ class TestPublishIngestMetrics:
             records_valid=0,
             records_invalid=0,
             duration_ms=1.0,
-            events_by_type={t: 0 for t in
-                            ["page_view", "click", "search", "product_view", "cart_event"]},
+            events_by_type={
+                t: 0 for t in ["page_view", "click", "search", "product_view", "cart_event"]
+            },
         )
         # No raise: división por cero manejada

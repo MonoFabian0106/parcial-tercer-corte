@@ -1,9 +1,10 @@
 """SQLAlchemy engine + session management for the ShopStream DWH."""
+
 from __future__ import annotations
 
 import os
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import Iterator
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
@@ -17,9 +18,7 @@ def _build_db_url() -> str:
     user = os.environ.get("DB_USER")
     password = os.environ.get("DB_PASSWORD")
     if not host or not user or not password:
-        raise RuntimeError(
-            "DB_HOST, DB_USER and DB_PASSWORD must be set as environment variables."
-        )
+        raise RuntimeError("DB_HOST, DB_USER and DB_PASSWORD must be set as environment variables.")
     return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{name}"
 
 
@@ -28,7 +27,7 @@ _SessionLocal: sessionmaker[Session] | None = None
 
 
 def get_engine() -> Engine:
-    global _engine, _SessionLocal
+    global _engine, _SessionLocal  # noqa: PLW0603 — lazy singleton para Lambda warm starts
     if _engine is None:
         _engine = create_engine(
             _build_db_url(),

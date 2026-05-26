@@ -20,16 +20,14 @@ import math
 import random
 from collections.abc import Iterator
 from dataclasses import dataclass
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
 
 from data_generation.catalog import Catalog
 from data_generation.schemas import (
     BROWSERS,
-    CART_ACTIONS,
     DEVICE_TYPES,
     ELEMENT_TYPES,
-    PAGE_TYPES,
 )
 
 # ---------------------------------------------------------------------------
@@ -39,22 +37,44 @@ from data_generation.schemas import (
 DEFAULT_TARGET_EVENTS = 800_000
 
 # Probabilidades del embudo (cada nivel condicionado al anterior)
-P_NOT_BOUNCE = 0.75            # 25% sesiones bounce
-P_REACH_PRODUCT_VIEW = 0.40    # de las no-bounce, qué fracción llega a product_view
-P_REACH_CART = 0.30            # de las que ven producto, qué fracción agrega al carrito
-P_PURCHASE = 0.40              # de las que llegan al carrito, qué fracción compra
+P_NOT_BOUNCE = 0.75  # 25% sesiones bounce
+P_REACH_PRODUCT_VIEW = 0.40  # de las no-bounce, qué fracción llega a product_view
+P_REACH_CART = 0.30  # de las que ven producto, qué fracción agrega al carrito
+P_PURCHASE = 0.40  # de las que llegan al carrito, qué fracción compra
 
 # Probabilidad de eventos paralelos durante la sesión
-P_CLICK_PER_PAGE_VIEW = 0.6    # clics promedio por page_view
-P_SEARCH_PER_SESSION = 0.35    # sesiones con al menos una búsqueda
+P_CLICK_PER_PAGE_VIEW = 0.6  # clics promedio por page_view
+P_SEARCH_PER_SESSION = 0.35  # sesiones con al menos una búsqueda
 
 # Anomalías
-P_ANOMALOUS_SESSION = 0.005    # ~0.5% sesiones anómalas
+P_ANOMALOUS_SESSION = 0.005  # ~0.5% sesiones anómalas
 
 # Distribución de horas (peso por hora 0-23): picos 12-14h y 19-22h
 HOUR_WEIGHTS = [
-    0.5, 0.3, 0.2, 0.15, 0.15, 0.2, 0.4, 0.7, 1.0, 1.3, 1.6, 1.8,
-    2.2, 2.3, 2.0, 1.7, 1.6, 1.7, 2.0, 2.4, 2.3, 1.9, 1.3, 0.8,
+    0.5,
+    0.3,
+    0.2,
+    0.15,
+    0.15,
+    0.2,
+    0.4,
+    0.7,
+    1.0,
+    1.3,
+    1.6,
+    1.8,
+    2.2,
+    2.3,
+    2.0,
+    1.7,
+    1.6,
+    1.7,
+    2.0,
+    2.4,
+    2.3,
+    1.9,
+    1.3,
+    0.8,
 ]
 
 PAGE_TYPE_BY_FUNNEL_STAGE = {
@@ -65,7 +85,9 @@ PAGE_TYPE_BY_FUNNEL_STAGE = {
 }
 
 REFERRERS = [
-    None, None, None,  # null = direct, peso alto
+    None,
+    None,
+    None,  # null = direct, peso alto
     "https://google.com/",
     "https://google.com/search",
     "https://facebook.com/",
@@ -87,22 +109,24 @@ class GeneratorConfig:
 # Utilidades
 # ---------------------------------------------------------------------------
 
+
 def _event_id(rng: random.Random) -> str:
-    return "E" + "%016x" % rng.getrandbits(64)
+    return f"E{rng.getrandbits(64):016x}"
 
 
 def _session_id(rng: random.Random) -> str:
-    return "S" + "%012x" % rng.getrandbits(48)
+    return f"S{rng.getrandbits(48):012x}"
 
 
 def _rng_hex(rng: random.Random, nbytes: int) -> str:
     """Hex determinista basado en el rng (sin os.urandom)."""
-    return "%0*x" % (nbytes * 2, rng.getrandbits(nbytes * 8))
+    width = nbytes * 2
+    return f"{rng.getrandbits(nbytes * 8):0{width}x}"
 
 
 def _iso(ts: datetime) -> str:
     """Formatea timestamp UTC al formato ISO-8601 con 'Z' final."""
-    return ts.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.") + f"{ts.microsecond:06d}Z"
+    return ts.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%S.") + f"{ts.microsecond:06d}Z"
 
 
 def _sample_hour(rng: random.Random) -> int:
@@ -157,6 +181,7 @@ def _page_url(page_type: str, rng: random.Random, product_id: str | None = None)
 # Generador de sesiones / eventos
 # ---------------------------------------------------------------------------
 
+
 class SessionGenerator:
     """Genera todos los eventos de una sesión individual."""
 
@@ -195,7 +220,7 @@ class SessionGenerator:
         return datetime.combine(
             self.run_date,
             time(hour, minute, second, microsecond),
-            tzinfo=timezone.utc,
+            tzinfo=UTC,
         )
 
     def _next_ts(self, prev_ts: datetime, min_gap_s: float, max_gap_s: float) -> datetime:
@@ -209,9 +234,7 @@ class SessionGenerator:
             gap = self.rng.uniform(min_gap_s, max_gap_s)
         return prev_ts + timedelta(seconds=gap)
 
-    def _emit_page_view(
-        self, ts: datetime, page_type: str, product_id: str | None = None
-    ) -> dict:
+    def _emit_page_view(self, ts: datetime, page_type: str, product_id: str | None = None) -> dict:
         time_on_page = (
             self.rng.uniform(2.0, 180.0)
             if not self.is_anomalous
@@ -260,9 +283,7 @@ class SessionGenerator:
 
     def _emit_product_view(self, ts: datetime, product: dict) -> dict:
         time_on_page = (
-            self.rng.uniform(5.0, 240.0)
-            if not self.is_anomalous
-            else self.rng.uniform(7000, 7200)
+            self.rng.uniform(5.0, 240.0) if not self.is_anomalous else self.rng.uniform(7000, 7200)
         )
         return {
             "event_id": _event_id(self.rng),
@@ -336,9 +357,7 @@ class SessionGenerator:
             yield self._emit_product_view(ts, product)
             for _ in range(_poisson(self.rng, P_CLICK_PER_PAGE_VIEW * 0.8)):
                 ts = self._next_ts(ts, 1.0, 6.0)
-                yield self._emit_click(
-                    ts, _page_url("product", self.rng, product["product_id"])
-                )
+                yield self._emit_click(ts, _page_url("product", self.rng, product["product_id"]))
             cart_products.append(product)
 
         if self.stage == "consideration":
@@ -372,6 +391,7 @@ class SessionGenerator:
 # ---------------------------------------------------------------------------
 # Orquestador a nivel de día
 # ---------------------------------------------------------------------------
+
 
 def generate_day(
     run_date: date,

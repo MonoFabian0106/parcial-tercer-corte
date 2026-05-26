@@ -18,7 +18,6 @@ from faker import Faker
 
 from data_generation.schemas import (
     AGE_BUCKETS,
-    BROWSERS,
     COUNTRIES,
     DEVICE_TYPES,
     PRODUCT_CATEGORIES,
@@ -68,12 +67,9 @@ def _weighted_choice(rng: random.Random, options: list[str], weights: list[float
     return rng.choices(options, weights=weights, k=1)[0]
 
 
-def generate_users(
-    n: int, seed: int, signup_window_days: int = 730
-) -> list[dict]:
+def generate_users(n: int, seed: int, signup_window_days: int = 730) -> list[dict]:
     """Genera `n` usuarios con distribuciones sesgadas pero realistas."""
     rng = random.Random(seed)
-    fake = Faker()
     Faker.seed(seed)
 
     today = date.today()

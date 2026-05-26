@@ -18,8 +18,7 @@ algún momento crecen los inputs.
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
-from typing import Iterable
+from datetime import UTC, datetime
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +31,7 @@ def _metric(name: str, value: float, unit: str, dimensions: list[dict]) -> dict:
         "Value": value,
         "Unit": unit,
         "Dimensions": dimensions,
-        "Timestamp": datetime.now(timezone.utc),
+        "Timestamp": datetime.now(UTC),
     }
 
 
@@ -65,7 +64,7 @@ def publish_ingest_metrics(
                 "EventsByType",
                 float(count),
                 "Count",
-                base_dims + [{"Name": "EventType", "Value": event_type}],
+                [*base_dims, {"Name": "EventType", "Value": event_type}],
             )
         )
 

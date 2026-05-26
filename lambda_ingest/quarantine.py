@@ -14,7 +14,7 @@ import io
 import json
 import logging
 import os
-from typing import Iterable, Optional
+from collections.abc import Iterable
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ def quarantine_key(source_key: str) -> str:
     """
     # Reemplaza el primer "events/" por "quarantine/"
     if source_key.startswith("events/"):
-        rest = source_key[len("events/"):]
+        rest = source_key[len("events/") :]
     else:
         rest = source_key
     # Cambia sufijo .jsonl por .errors.jsonl
@@ -46,7 +46,7 @@ def write_quarantine(
     source_bucket: str,
     source_key: str,
     s3_client,
-    quarantine_bucket: Optional[str] = None,
+    quarantine_bucket: str | None = None,
 ) -> dict:
     """Sube los registros inválidos como JSONL al bucket de cuarentena.
 
@@ -54,9 +54,7 @@ def write_quarantine(
     """
     bucket = quarantine_bucket or os.environ.get(QUARANTINE_BUCKET_ENV)
     if not bucket:
-        raise ValueError(
-            f"Bucket de cuarentena no configurado (define {QUARANTINE_BUCKET_ENV})"
-        )
+        raise ValueError(f"Bucket de cuarentena no configurado (define {QUARANTINE_BUCKET_ENV})")
 
     buf = io.BytesIO()
     count = 0
@@ -84,6 +82,8 @@ def write_quarantine(
     )
     logger.warning(
         "Quarantine wrote %d records to s3://%s/%s",
-        count, bucket, key,
+        count,
+        bucket,
+        key,
     )
     return {"bucket": bucket, "key": key, "count": count}

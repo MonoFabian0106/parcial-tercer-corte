@@ -6,7 +6,6 @@ con los datos particionados de Parquet.
 """
 
 import os
-import sys
 from pathlib import Path
 
 import psycopg2

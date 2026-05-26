@@ -109,7 +109,9 @@ def run(input_base: str, output_base: str, run_date: str | None) -> dict:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    p = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     p.add_argument("--input", required=True, help="Base path de eventos raw (S3 o local)")
     p.add_argument("--output", required=True, help="Base path de salida para Parquet")
     p.add_argument(

@@ -7,17 +7,14 @@ con moto para mockear SNS.
 
 from __future__ import annotations
 
-import json
-import os
-
 import boto3
 import pytest
 from moto import mock_aws
 
-
 # ─────────────────────────────────────────────────────────────
 # Fixtures SQLite — simula el DWH con las tablas principales
 # ─────────────────────────────────────────────────────────────
+
 
 @pytest.fixture
 def db_conn():
@@ -122,9 +119,12 @@ def db_conn():
 # Tests de estructura e integridad
 # ─────────────────────────────────────────────────────────────
 
+
 class TestDwhSchema:
     def test_dim_date_seeded(self, db_conn):
-        row = db_conn.execute("SELECT year,month,day FROM dim_date WHERE dt='2026-05-22'").fetchone()
+        row = db_conn.execute(
+            "SELECT year,month,day FROM dim_date WHERE dt='2026-05-22'"
+        ).fetchone()
         assert row == (2026, 5, 22)
 
     def test_fact_bounce_rate_insert_valid(self, db_conn):
@@ -138,6 +138,7 @@ class TestDwhSchema:
 
     def test_fact_bounce_rate_rejects_negative_sessions(self, db_conn):
         import sqlite3
+
         with pytest.raises(sqlite3.IntegrityError):
             db_conn.execute(
                 "INSERT INTO fact_bounce_rate(dt,landing_page_type,total_sessions,bounce_sessions,bounce_rate)"
@@ -146,6 +147,7 @@ class TestDwhSchema:
 
     def test_fact_bounce_rate_rejects_rate_out_of_range(self, db_conn):
         import sqlite3
+
         with pytest.raises(sqlite3.IntegrityError):
             db_conn.execute(
                 "INSERT INTO fact_bounce_rate(dt,landing_page_type,total_sessions,bounce_sessions,bounce_rate)"
@@ -163,10 +165,10 @@ class TestDwhSchema:
 
     def test_fact_top_pages_rejects_zero_views(self, db_conn):
         import sqlite3
+
         with pytest.raises(sqlite3.IntegrityError):
             db_conn.execute(
-                "INSERT INTO fact_top_pages(dt,page_url,views)"
-                " VALUES ('2026-05-22','/page',0)"
+                "INSERT INTO fact_top_pages(dt,page_url,views)" " VALUES ('2026-05-22','/page',0)"
             )
 
     def test_fact_conversion_funnel_all_stages(self, db_conn):
@@ -215,6 +217,7 @@ class TestDwhSchema:
 
     def test_foreign_key_rejected_without_dim_date(self, db_conn):
         import sqlite3
+
         with pytest.raises(sqlite3.IntegrityError):
             db_conn.execute(
                 "INSERT INTO fact_bounce_rate(dt,landing_page_type,total_sessions,bounce_sessions,bounce_rate)"
@@ -222,13 +225,19 @@ class TestDwhSchema:
             )
 
     def test_all_fact_tables_exist(self, db_conn):
-        tables = {r[0] for r in db_conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        ).fetchall()}
+        tables = {
+            r[0]
+            for r in db_conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+        }
         expected = {
-            "dim_date", "fact_bounce_rate", "fact_top_pages",
-            "fact_conversion_funnel", "fact_product_gap",
-            "fact_anomalies", "fact_device_country", "fact_nav_paths",
+            "dim_date",
+            "fact_bounce_rate",
+            "fact_top_pages",
+            "fact_conversion_funnel",
+            "fact_product_gap",
+            "fact_anomalies",
+            "fact_device_country",
+            "fact_nav_paths",
         }
         assert expected.issubset(tables)
 
@@ -236,6 +245,7 @@ class TestDwhSchema:
 # ─────────────────────────────────────────────────────────────
 # Tests de la Lambda de alerta (moto)
 # ─────────────────────────────────────────────────────────────
+
 
 @mock_aws
 class TestAlertHandler:
@@ -245,7 +255,7 @@ class TestAlertHandler:
         return client, topic_arn
 
     def test_handler_publishes_on_glue_failure(self, monkeypatch):
-        client, topic_arn = self._setup_sns()
+        _client, topic_arn = self._setup_sns()
         monkeypatch.setenv("SNS_TOPIC_ARN", topic_arn)
 
         from lambda_ingest import alert_handler

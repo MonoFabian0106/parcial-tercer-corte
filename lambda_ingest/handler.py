@@ -72,7 +72,10 @@ def _process_file(bucket: str, key: str) -> dict[str, Any]:
         if invalid_ratio >= max_ratio:
             logger.error(
                 "File s3://%s/%s exceeds invalid ratio (%.2f >= %.2f). Quarantining entire file.",
-                bucket, key, invalid_ratio, max_ratio,
+                bucket,
+                key,
+                invalid_ratio,
+                max_ratio,
             )
             # Volcar el archivo completo: re-leerlo y subirlo al bucket de quarantine
             quarantine_meta = _quarantine_whole_file(bucket, key, reason="invalid_ratio_exceeded")

@@ -1,4 +1,5 @@
 """Tests for the Flask API — Flask test client + mocked DB session."""
+
 from __future__ import annotations
 
 from contextlib import contextmanager
@@ -95,24 +96,26 @@ def test_unknown_path_returns_404(client):
 
 
 def test_pages_top_time_on_page_ok(client, patch_db):
-    patch_db([
+    patch_db(
         [
-            SimpleNamespace(
-                page_url="/p/abc",
-                page_type="product",
-                views=120,
-                avg_time_on_page=87.5,
-                p95_time_on_page=200.0,
-            ),
-            SimpleNamespace(
-                page_url="/cat/shoes",
-                page_type="category",
-                views=300,
-                avg_time_on_page=42.0,
-                p95_time_on_page=140.0,
-            ),
-        ],
-    ])
+            [
+                SimpleNamespace(
+                    page_url="/p/abc",
+                    page_type="product",
+                    views=120,
+                    avg_time_on_page=87.5,
+                    p95_time_on_page=200.0,
+                ),
+                SimpleNamespace(
+                    page_url="/cat/shoes",
+                    page_type="category",
+                    views=300,
+                    avg_time_on_page=42.0,
+                    p95_time_on_page=140.0,
+                ),
+            ],
+        ]
+    )
 
     response = client.get("/pages/top?metric=time_on_page&date=2026-05-22&limit=2")
     assert response.status_code == 200
@@ -126,16 +129,18 @@ def test_pages_top_time_on_page_ok(client, patch_db):
 
 
 def test_pages_top_bounce_rate_ok(client, patch_db):
-    patch_db([
+    patch_db(
         [
-            SimpleNamespace(
-                landing_page_type="home",
-                total_sessions=1000,
-                bounce_sessions=420,
-                bounce_rate=0.42,
-            ),
-        ],
-    ])
+            [
+                SimpleNamespace(
+                    landing_page_type="home",
+                    total_sessions=1000,
+                    bounce_sessions=420,
+                    bounce_rate=0.42,
+                ),
+            ],
+        ]
+    )
 
     response = client.get("/pages/top?metric=bounce_rate&date=2026-05-22")
     assert response.status_code == 200
@@ -178,10 +183,16 @@ def test_pages_top_no_data_returns_404(client, patch_db):
 
 
 def test_sessions_summary_ok(client, patch_db):
-    patch_db([
-        [SimpleNamespace(total_sessions=500, total_page_views=2000, avg_time_on_page=33.3, segments=4)],
-        [SimpleNamespace(overall_bounce_rate=0.25)],
-    ])
+    patch_db(
+        [
+            [
+                SimpleNamespace(
+                    total_sessions=500, total_page_views=2000, avg_time_on_page=33.3, segments=4
+                )
+            ],
+            [SimpleNamespace(overall_bounce_rate=0.25)],
+        ]
+    )
     response = client.get("/sessions/summary?date=2026-05-22&country=MX&device=mobile")
     assert response.status_code == 200
     body = response.json
@@ -192,10 +203,16 @@ def test_sessions_summary_ok(client, patch_db):
 
 
 def test_sessions_summary_only_date(client, patch_db):
-    patch_db([
-        [SimpleNamespace(total_sessions=1200, total_page_views=4000, avg_time_on_page=40.0, segments=12)],
-        [SimpleNamespace(overall_bounce_rate=0.3)],
-    ])
+    patch_db(
+        [
+            [
+                SimpleNamespace(
+                    total_sessions=1200, total_page_views=4000, avg_time_on_page=40.0, segments=12
+                )
+            ],
+            [SimpleNamespace(overall_bounce_rate=0.3)],
+        ]
+    )
     response = client.get("/sessions/summary?date=2026-05-22")
     assert response.status_code == 200
     assert response.json["country"] is None
@@ -213,9 +230,15 @@ def test_sessions_summary_invalid_device_returns_400(client):
 
 
 def test_sessions_summary_no_data_returns_404(client, patch_db):
-    patch_db([
-        [SimpleNamespace(total_sessions=0, total_page_views=0, avg_time_on_page=None, segments=0)],
-    ])
+    patch_db(
+        [
+            [
+                SimpleNamespace(
+                    total_sessions=0, total_page_views=0, avg_time_on_page=None, segments=0
+                )
+            ],
+        ]
+    )
     response = client.get("/sessions/summary?date=2026-05-22&country=ZZ")
     assert response.status_code == 404
 
@@ -226,24 +249,26 @@ def test_sessions_summary_no_data_returns_404(client, patch_db):
 
 
 def test_anomalies_ok(client, patch_db):
-    patch_db([
+    patch_db(
         [
-            SimpleNamespace(
-                session_id="s-1",
-                user_id="u-1",
-                total_events=350,
-                session_duration_seconds=120.5,
-                unique_pages=2,
-                events_per_minute=175.0,
-                z_total_events=4.2,
-                z_session_duration_seconds=-3.1,
-                z_unique_pages=0.0,
-                z_events_per_minute=5.8,
-                total_flags=3,
-                anomaly_type="bot_like",
-            ),
-        ],
-    ])
+            [
+                SimpleNamespace(
+                    session_id="s-1",
+                    user_id="u-1",
+                    total_events=350,
+                    session_duration_seconds=120.5,
+                    unique_pages=2,
+                    events_per_minute=175.0,
+                    z_total_events=4.2,
+                    z_session_duration_seconds=-3.1,
+                    z_unique_pages=0.0,
+                    z_events_per_minute=5.8,
+                    total_flags=3,
+                    anomaly_type="bot_like",
+                ),
+            ],
+        ]
+    )
     response = client.get("/anomalies?date=2026-05-22")
     assert response.status_code == 200
     body = response.json

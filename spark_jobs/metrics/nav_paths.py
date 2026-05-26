@@ -18,12 +18,13 @@ def compute(events: DataFrame, top_n: int = 10, max_path_length: int = 10) -> Da
     sequences = (
         page_views.groupBy("dt", "session_id")
         .agg(
-            F.sort_array(
-                F.collect_list(F.struct(F.col("event_ts"), F.col("page_type")))
-            ).alias("ts_pt_list")
+            F.sort_array(F.collect_list(F.struct(F.col("event_ts"), F.col("page_type")))).alias(
+                "ts_pt_list"
+            )
         )
         .withColumn(
-            "path_list", F.expr(f"slice(transform(ts_pt_list, x -> x.page_type), 1, {max_path_length})")
+            "path_list",
+            F.expr(f"slice(transform(ts_pt_list, x -> x.page_type), 1, {max_path_length})"),
         )
         .withColumn("path", F.concat_ws("->", F.col("path_list")))
         .withColumn("path_length", F.size(F.col("path_list")))
@@ -33,12 +34,9 @@ def compute(events: DataFrame, top_n: int = 10, max_path_length: int = 10) -> Da
     # Agrupar por ruta y contar
     from pyspark.sql import Window
 
-    aggregated = (
-        sequences.groupBy("dt", "path")
-        .agg(
-            F.count("*").alias("sessions"),
-            F.avg("path_length").alias("avg_path_length"),
-        )
+    aggregated = sequences.groupBy("dt", "path").agg(
+        F.count("*").alias("sessions"),
+        F.avg("path_length").alias("avg_path_length"),
     )
 
     w = Window.partitionBy("dt").orderBy(F.desc("sessions"))

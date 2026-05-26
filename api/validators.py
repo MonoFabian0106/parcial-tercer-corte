@@ -1,4 +1,5 @@
 """Manual input validators for query string params."""
+
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -19,7 +20,9 @@ def parse_date(raw: str | None, *, field: str = "date", required: bool = True) -
         raise ValidationError(f"'{field}' must be YYYY-MM-DD, got '{raw}'") from exc
 
 
-def parse_enum(raw: str | None, allowed: set[str], *, field: str, required: bool = True) -> str | None:
+def parse_enum(
+    raw: str | None, allowed: set[str], *, field: str, required: bool = True
+) -> str | None:
     if raw is None or raw == "":
         if required:
             raise ValidationError(f"'{field}' is required (one of {sorted(allowed)})")

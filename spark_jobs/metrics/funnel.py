@@ -17,22 +17,20 @@ def compute(events: DataFrame) -> DataFrame:
     Columnas: `dt, stage, sessions, conversion_rate_from_previous, conversion_rate_overall`.
     """
     # Stage flags por sesión (al menos uno del tipo correspondiente)
-    per_session = (
-        events.groupBy("dt", "session_id")
-        .agg(
-            F.max(F.when(F.col("event_type") == "page_view", 1).otherwise(0)).alias("has_pv"),
-            F.max(F.when(F.col("event_type") == "product_view", 1).otherwise(0)).alias("has_prod"),
-            F.max(
-                F.when((F.col("event_type") == "cart_event") & (F.col("action") == "add"), 1)
-                .otherwise(0)
-            ).alias("has_cart"),
-            F.max(
-                F.when(
-                    (F.col("event_type") == "page_view") & (F.col("page_type") == "checkout"),
-                    1,
-                ).otherwise(0)
-            ).alias("has_purchase"),
-        )
+    per_session = events.groupBy("dt", "session_id").agg(
+        F.max(F.when(F.col("event_type") == "page_view", 1).otherwise(0)).alias("has_pv"),
+        F.max(F.when(F.col("event_type") == "product_view", 1).otherwise(0)).alias("has_prod"),
+        F.max(
+            F.when((F.col("event_type") == "cart_event") & (F.col("action") == "add"), 1).otherwise(
+                0
+            )
+        ).alias("has_cart"),
+        F.max(
+            F.when(
+                (F.col("event_type") == "page_view") & (F.col("page_type") == "checkout"),
+                1,
+            ).otherwise(0)
+        ).alias("has_purchase"),
     )
 
     aggregated = per_session.groupBy("dt").agg(
@@ -79,8 +77,9 @@ def compute(events: DataFrame) -> DataFrame:
     stages_df = stages_df.withColumn("_prev", F.lag("sessions").over(w_prev))
     stages_df = stages_df.withColumn(
         "conversion_rate_from_previous",
-        F.when(F.col("_prev").isNotNull(), F.round(F.col("sessions") / F.col("_prev"), 4))
-        .otherwise(F.lit(1.0)),
+        F.when(
+            F.col("_prev").isNotNull(), F.round(F.col("sessions") / F.col("_prev"), 4)
+        ).otherwise(F.lit(1.0)),
     ).drop("_prev")
 
     return stages_df.orderBy("dt", "stage_order").drop("stage_order")

@@ -15,7 +15,6 @@ from datetime import date, timedelta
 from pathlib import Path
 
 import psycopg2
-from psycopg2 import sql
 
 
 def get_conn():
@@ -44,15 +43,17 @@ def populate_dim_date(conn, start: date, end: date) -> int:
     rows = []
     d = start
     while d <= end:
-        rows.append((
-            d.isoformat(),
-            d.year,
-            d.month,
-            d.day,
-            d.weekday(),            # 0=Mon … 6=Sun
-            bool(d.weekday() >= 5), # is_weekend
-            d.isocalendar()[1],    # week_of_year
-        ))
+        rows.append(
+            (
+                d.isoformat(),
+                d.year,
+                d.month,
+                d.day,
+                d.weekday(),  # 0=Mon … 6=Sun
+                bool(d.weekday() >= 5),  # is_weekend
+                d.isocalendar()[1],  # week_of_year
+            )
+        )
         d += timedelta(days=1)
 
     with conn.cursor() as cur:
@@ -76,7 +77,9 @@ def main() -> int:
         print("  Exporta desde .env.local o pasa como env vars.")
         return 1
 
-    print(f"==> Conectando a {os.environ['DB_HOST']}:{os.environ.get('DB_PORT',5432)}/{os.environ['DB_NAME']}...")
+    print(
+        f"==> Conectando a {os.environ['DB_HOST']}:{os.environ.get('DB_PORT',5432)}/{os.environ['DB_NAME']}..."
+    )
     try:
         conn = get_conn()
     except Exception as e:

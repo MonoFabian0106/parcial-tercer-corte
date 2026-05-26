@@ -24,9 +24,7 @@ def compute(events: DataFrame, top_n: int = 20) -> DataFrame:
         # Para "top_n por día" usamos un ranking en lugar de un limit global
         .withColumn(
             "rank",
-            F.row_number().over(
-                Window.partitionBy("dt").orderBy(F.desc("avg_time_on_page"))
-            ),
+            F.row_number().over(Window.partitionBy("dt").orderBy(F.desc("avg_time_on_page"))),
         )
         .filter(F.col("rank") <= top_n)
         .drop("rank")

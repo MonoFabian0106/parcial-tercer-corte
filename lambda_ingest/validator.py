@@ -16,8 +16,7 @@ from data_generation.schemas import EVENT_TYPE_SCHEMAS
 
 # Pre-compilados (una sola instancia, reutilizable entre invocaciones Lambda)
 _VALIDATORS: dict[str, Draft7Validator] = {
-    event_type: Draft7Validator(schema)
-    for event_type, schema in EVENT_TYPE_SCHEMAS.items()
+    event_type: Draft7Validator(schema) for event_type, schema in EVENT_TYPE_SCHEMAS.items()
 }
 
 
@@ -55,9 +54,7 @@ def validate_line(line: bytes | str) -> ValidationResult:
 
     event_type = payload.get("event_type")
     if event_type not in _VALIDATORS:
-        return ValidationResult(
-            False, event_type, f"unknown_event_type: {event_type!r}", raw
-        )
+        return ValidationResult(False, event_type, f"unknown_event_type: {event_type!r}", raw)
 
     validator = _VALIDATORS[event_type]
     errors = list(validator.iter_errors(payload))

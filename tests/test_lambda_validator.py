@@ -4,10 +4,7 @@ from __future__ import annotations
 
 import json
 
-import pytest
-
 from lambda_ingest.validator import event_type_counter, validate_line
-
 
 VALID_PAGE_VIEW = {
     "event_id": "Eabcdef0123456789",
@@ -109,7 +106,5 @@ class TestValidateLine:
 class TestEventTypeCounter:
     def test_returns_all_event_types_at_zero(self):
         c = event_type_counter()
-        assert set(c.keys()) == {
-            "page_view", "click", "search", "product_view", "cart_event"
-        }
+        assert set(c.keys()) == {"page_view", "click", "search", "product_view", "cart_event"}
         assert all(v == 0 for v in c.values())

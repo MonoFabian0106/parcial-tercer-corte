@@ -5,9 +5,8 @@ Cada función es pura: recibe un DataFrame y devuelve otro DataFrame nuevo.
 
 from __future__ import annotations
 
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, Window
 from pyspark.sql import functions as F
-from pyspark.sql import Window
 
 
 def deduplicate_events(df: DataFrame) -> DataFrame:
@@ -73,8 +72,7 @@ def impute_time_on_page(df: DataFrame) -> DataFrame:
     df2 = df2.withColumn(
         "time_on_page_seconds",
         F.when(
-            (F.col("event_type") == "page_view")
-            & F.col("time_on_page_seconds").isNull(),
+            (F.col("event_type") == "page_view") & F.col("time_on_page_seconds").isNull(),
             F.col("_median_top"),
         ).otherwise(F.col("time_on_page_seconds")),
     ).drop("_median_top")

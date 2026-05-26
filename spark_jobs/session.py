@@ -13,39 +13,40 @@ from pyspark.sql.types import (
     StringType,
     StructField,
     StructType,
-    TimestampType,
 )
 
 # Schema explícito: evita schema-inference (costoso en archivos grandes) y nos da
 # control sobre tipos. Cada evento usa un subconjunto; las columnas no presentes
 # quedan nulas (esperado).
-EVENTS_SCHEMA = StructType([
-    StructField("event_id", StringType(), nullable=False),
-    StructField("event_type", StringType(), nullable=False),
-    StructField("user_id", StringType(), nullable=False),
-    StructField("session_id", StringType(), nullable=False),
-    StructField("timestamp", StringType(), nullable=False),  # parseamos después
-    # page_view
-    StructField("page_url", StringType(), nullable=True),
-    StructField("page_type", StringType(), nullable=True),
-    StructField("time_on_page_seconds", DoubleType(), nullable=True),
-    StructField("referrer", StringType(), nullable=True),
-    StructField("device_type", StringType(), nullable=True),
-    StructField("country", StringType(), nullable=True),
-    # click
-    StructField("element_id", StringType(), nullable=True),
-    StructField("element_type", StringType(), nullable=True),
-    StructField("x_position", IntegerType(), nullable=True),
-    StructField("y_position", IntegerType(), nullable=True),
-    # search
-    StructField("query", StringType(), nullable=True),
-    StructField("results_count", IntegerType(), nullable=True),
-    # product_view / cart_event
-    StructField("product_id", StringType(), nullable=True),
-    StructField("category", StringType(), nullable=True),
-    StructField("price", DoubleType(), nullable=True),
-    StructField("action", StringType(), nullable=True),
-])
+EVENTS_SCHEMA = StructType(
+    [
+        StructField("event_id", StringType(), nullable=False),
+        StructField("event_type", StringType(), nullable=False),
+        StructField("user_id", StringType(), nullable=False),
+        StructField("session_id", StringType(), nullable=False),
+        StructField("timestamp", StringType(), nullable=False),  # parseamos después
+        # page_view
+        StructField("page_url", StringType(), nullable=True),
+        StructField("page_type", StringType(), nullable=True),
+        StructField("time_on_page_seconds", DoubleType(), nullable=True),
+        StructField("referrer", StringType(), nullable=True),
+        StructField("device_type", StringType(), nullable=True),
+        StructField("country", StringType(), nullable=True),
+        # click
+        StructField("element_id", StringType(), nullable=True),
+        StructField("element_type", StringType(), nullable=True),
+        StructField("x_position", IntegerType(), nullable=True),
+        StructField("y_position", IntegerType(), nullable=True),
+        # search
+        StructField("query", StringType(), nullable=True),
+        StructField("results_count", IntegerType(), nullable=True),
+        # product_view / cart_event
+        StructField("product_id", StringType(), nullable=True),
+        StructField("category", StringType(), nullable=True),
+        StructField("price", DoubleType(), nullable=True),
+        StructField("action", StringType(), nullable=True),
+    ]
+)
 
 
 def build_spark_session(app_name: str = "shopstream-etl") -> SparkSession:

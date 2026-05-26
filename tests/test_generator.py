@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import json
 from datetime import date
-from pathlib import Path
 
 import pytest
 from jsonschema import Draft7Validator
 
-from data_generation.catalog import build_or_load_catalog, generate_products, generate_users
+from data_generation.catalog import build_or_load_catalog, generate_users
 from data_generation.generator import GeneratorConfig, generate_day
 from data_generation.schemas import EVENT_TYPE_SCHEMAS
 

@@ -44,13 +44,13 @@ spark = glueContext.spark_session
 job = Job(glueContext)
 job.init(args["JOB_NAME"], args)
 
-RUN_DATE       = args["RUN_DATE"]          # YYYY-MM-DD o 'all'
-DB_HOST        = args["DB_HOST"]
-DB_NAME        = args["DB_NAME"]
-DB_USER        = args["DB_USER"]
-DB_PASSWORD    = args["DB_PASSWORD"]
-CATALOG_DB     = args["CATALOG_DB"]
-PROC_BUCKET    = args["PROCESSED_BUCKET"]
+RUN_DATE = args["RUN_DATE"]  # YYYY-MM-DD o 'all'
+DB_HOST = args["DB_HOST"]
+DB_NAME = args["DB_NAME"]
+DB_USER = args["DB_USER"]
+DB_PASSWORD = args["DB_PASSWORD"]
+CATALOG_DB = args["CATALOG_DB"]
+PROC_BUCKET = args["PROCESSED_BUCKET"]
 
 JDBC_URL = f"jdbc:postgresql://{DB_HOST}:5432/{DB_NAME}"
 
@@ -62,10 +62,10 @@ METRICS = {
     "top_pages": (
         "fact_top_pages",
         [
-            ("dt",               "string", "dt",               "date"),
-            ("page_url",         "string", "page_url",         "string"),
-            ("page_type",        "string", "page_type",        "string"),
-            ("views",            "long",   "views",            "int"),
+            ("dt", "string", "dt", "date"),
+            ("page_url", "string", "page_url", "string"),
+            ("page_type", "string", "page_type", "string"),
+            ("views", "long", "views", "int"),
             ("avg_time_on_page", "double", "avg_time_on_page", "double"),
             ("p95_time_on_page", "double", "p95_time_on_page", "double"),
         ],
@@ -73,88 +73,89 @@ METRICS = {
     "bounce_rate": (
         "fact_bounce_rate",
         [
-            ("dt",                "string", "dt",                "date"),
+            ("dt", "string", "dt", "date"),
             ("landing_page_type", "string", "landing_page_type", "string"),
-            ("total_sessions",    "long",   "total_sessions",    "int"),
-            ("bounce_sessions",   "long",   "bounce_sessions",   "int"),
-            ("bounce_rate",       "double", "bounce_rate",       "double"),
+            ("total_sessions", "long", "total_sessions", "int"),
+            ("bounce_sessions", "long", "bounce_sessions", "int"),
+            ("bounce_rate", "double", "bounce_rate", "double"),
         ],
     ),
     "funnel": (
         "fact_conversion_funnel",
         [
-            ("dt",                            "string", "dt",                            "date"),
-            ("stage",                         "string", "stage",                         "string"),
-            ("sessions",                      "long",   "sessions",                      "int"),
+            ("dt", "string", "dt", "date"),
+            ("stage", "string", "stage", "string"),
+            ("sessions", "long", "sessions", "int"),
             ("conversion_rate_from_previous", "double", "conversion_rate_from_previous", "double"),
-            ("conversion_rate_overall",       "double", "conversion_rate_overall",       "double"),
+            ("conversion_rate_overall", "double", "conversion_rate_overall", "double"),
         ],
     ),
     "product_gap": (
         "fact_product_gap",
         [
-            ("dt",         "string", "dt",         "date"),
+            ("dt", "string", "dt", "date"),
             ("product_id", "string", "product_id", "string"),
-            ("category",   "string", "category",   "string"),
-            ("views",      "long",   "views",       "int"),
-            ("cart_adds",  "long",   "cart_adds",   "int"),
-            ("conversion", "double", "conversion",  "double"),
-            ("gap_score",  "double", "gap_score",   "double"),
+            ("category", "string", "category", "string"),
+            ("views", "long", "views", "int"),
+            ("cart_adds", "long", "cart_adds", "int"),
+            ("conversion", "double", "conversion", "double"),
+            ("gap_score", "double", "gap_score", "double"),
         ],
     ),
     "nav_paths": (
         "fact_nav_paths",
         [
-            ("dt",              "string", "dt",              "date"),
-            ("path",            "string", "path",            "string"),
-            ("sessions",        "long",   "sessions",        "int"),
+            ("dt", "string", "dt", "date"),
+            ("path", "string", "path", "string"),
+            ("sessions", "long", "sessions", "int"),
             ("avg_path_length", "double", "avg_path_length", "double"),
         ],
     ),
     "device_country": (
         "fact_device_country",
         [
-            ("dt",                 "string", "dt",                 "date"),
-            ("device_type",        "string", "device_type",        "string"),
-            ("country",            "string", "country",            "string"),
-            ("page_views",         "long",   "page_views",         "int"),
-            ("avg_time_on_page",   "double", "avg_time_on_page",   "double"),
-            ("p95_time_on_page",   "double", "p95_time_on_page",   "double"),
-            ("unique_sessions",    "long",   "unique_sessions",    "int"),
+            ("dt", "string", "dt", "date"),
+            ("device_type", "string", "device_type", "string"),
+            ("country", "string", "country", "string"),
+            ("page_views", "long", "page_views", "int"),
+            ("avg_time_on_page", "double", "avg_time_on_page", "double"),
+            ("p95_time_on_page", "double", "p95_time_on_page", "double"),
+            ("unique_sessions", "long", "unique_sessions", "int"),
         ],
     ),
     "anomalies": (
         "fact_anomalies",
         [
-            ("dt",                         "string", "dt",                         "date"),
-            ("session_id",                 "string", "session_id",                 "string"),
-            ("user_id",                    "string", "user_id",                    "string"),
-            ("total_events",               "long",   "total_events",               "int"),
-            ("session_duration_seconds",   "double", "session_duration_seconds",   "double"),
-            ("unique_pages",               "long",   "unique_pages",               "int"),
-            ("events_per_minute",          "double", "events_per_minute",          "double"),
-            ("z_total_events",             "double", "z_total_events",             "double"),
+            ("dt", "string", "dt", "date"),
+            ("session_id", "string", "session_id", "string"),
+            ("user_id", "string", "user_id", "string"),
+            ("total_events", "long", "total_events", "int"),
+            ("session_duration_seconds", "double", "session_duration_seconds", "double"),
+            ("unique_pages", "long", "unique_pages", "int"),
+            ("events_per_minute", "double", "events_per_minute", "double"),
+            ("z_total_events", "double", "z_total_events", "double"),
             ("z_session_duration_seconds", "double", "z_session_duration_seconds", "double"),
-            ("z_unique_pages",             "double", "z_unique_pages",             "double"),
-            ("z_events_per_minute",        "double", "z_events_per_minute",        "double"),
-            ("total_flags",                "long",   "total_flags",                "short"),
-            ("anomaly_type",               "string", "anomaly_type",               "string"),
+            ("z_unique_pages", "double", "z_unique_pages", "double"),
+            ("z_events_per_minute", "double", "z_events_per_minute", "double"),
+            ("total_flags", "long", "total_flags", "short"),
+            ("anomaly_type", "string", "anomaly_type", "string"),
         ],
     ),
 }
 
 # ── Reglas DQDL mínimas por métrica ─────────────────────────
 DQ_RULES = {
-    "top_pages":     'Rules = [ IsComplete "dt", IsComplete "page_url", ColumnValues "views" > 0 ]',
-    "bounce_rate":   'Rules = [ IsComplete "dt", IsComplete "landing_page_type", ColumnValues "bounce_rate" between 0 and 1, ColumnValues "total_sessions" > 0 ]',
-    "funnel":        'Rules = [ IsComplete "dt", IsComplete "stage", ColumnValues "sessions" >= 0 ]',
-    "product_gap":   'Rules = [ IsComplete "dt", IsComplete "product_id", ColumnValues "views" >= 0 ]',
-    "nav_paths":     'Rules = [ IsComplete "dt", IsComplete "path", ColumnValues "sessions" > 0 ]',
-    "device_country":'Rules = [ IsComplete "dt", IsComplete "device_type", IsComplete "country" ]',
-    "anomalies":     'Rules = [ IsComplete "dt", IsComplete "session_id", ColumnValues "total_flags" >= 2 ]',
+    "top_pages": 'Rules = [ IsComplete "dt", IsComplete "page_url", ColumnValues "views" > 0 ]',
+    "bounce_rate": 'Rules = [ IsComplete "dt", IsComplete "landing_page_type", ColumnValues "bounce_rate" between 0 and 1, ColumnValues "total_sessions" > 0 ]',
+    "funnel": 'Rules = [ IsComplete "dt", IsComplete "stage", ColumnValues "sessions" >= 0 ]',
+    "product_gap": 'Rules = [ IsComplete "dt", IsComplete "product_id", ColumnValues "views" >= 0 ]',
+    "nav_paths": 'Rules = [ IsComplete "dt", IsComplete "path", ColumnValues "sessions" > 0 ]',
+    "device_country": 'Rules = [ IsComplete "dt", IsComplete "device_type", IsComplete "country" ]',
+    "anomalies": 'Rules = [ IsComplete "dt", IsComplete "session_id", ColumnValues "total_flags" >= 2 ]',
 }
 
 # ── Función de carga por métrica ─────────────────────────────
+
 
 def load_metric(metric_name: str, rds_table: str, mappings: list) -> None:
     print(f"[{metric_name}] Leyendo desde Glue Catalog {CATALOG_DB}.{metric_name}...")
@@ -208,7 +209,9 @@ def load_metric(metric_name: str, rds_table: str, mappings: list) -> None:
             "password": DB_PASSWORD,
             "batchsize": "1000",
             # Truncate la partición dt antes de insertar (idempotente)
-            "preactions": f"DELETE FROM {rds_table} WHERE dt = '{RUN_DATE}'" if RUN_DATE != "all" else "",
+            "preactions": (
+                f"DELETE FROM {rds_table} WHERE dt = '{RUN_DATE}'" if RUN_DATE != "all" else ""
+            ),
         },
         transformation_ctx=f"sink_{metric_name}",
     )

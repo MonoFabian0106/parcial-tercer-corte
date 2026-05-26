@@ -53,7 +53,23 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "PL", "RUF"]
-ignore = ["PLR0913"]
+ignore = [
+    "PLR0913",  # too-many-arguments
+    "PLR0911",  # too-many-return-statements
+    "PLR0912",  # too-many-branches
+    "PLR0915",  # too-many-statements
+    "PLR2004",  # magic-value-comparison (ruidoso en tests)
+    "PLR1714",  # repeated-equality-comparison
+    "PLW2901",  # redefined-loop-name
+    "PLW1508",  # invalid-envvar-default
+    "PLC0415",  # import-outside-top-level (lazy imports en Lambda)
+    "E501",     # line-too-long (black ya maneja el ancho)
+    "RUF001",   # ambiguous-unicode-character-string (acentos en español)
+    "RUF002",   # ambiguous-unicode-character-docstring
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]  # assert False en tests está bien
 
 [tool.black]
 line-length = 100

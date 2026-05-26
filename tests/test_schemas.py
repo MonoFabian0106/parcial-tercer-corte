@@ -15,7 +15,6 @@ from data_generation.schemas import (
     PRODUCT_SCHEMA,
     PRODUCT_VIEW_SCHEMA,
     SEARCH_SCHEMA,
-    SESSION_SCHEMA,
     TRANSACTION_SCHEMA,
     USER_SCHEMA,
 )

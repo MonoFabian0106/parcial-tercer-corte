@@ -39,7 +39,9 @@ def _extract_details(event: dict) -> tuple[str, str]:
 
     # Formato genérico (invocación directa)
     job_name = event.get("jobName", "unknown-job")
-    message = f"Fallo en pipeline ShopStream.\n\nDetalles:\n{json.dumps(event, indent=2, default=str)}"
+    message = (
+        f"Fallo en pipeline ShopStream.\n\nDetalles:\n{json.dumps(event, indent=2, default=str)}"
+    )
     return job_name, message
 
 
