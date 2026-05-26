@@ -1,0 +1,58 @@
+{
+    "dev": {
+        "app_function": "api.app.app",
+        "project_name": "shopstream-api",
+        "runtime": "python3.11",
+        "aws_region": "us-east-1",
+        "profile_name": "default",
+        "s3_bucket": "shopstream-zappa-deploys-mf0106",
+
+        "role_name": "LabRole",
+        "manage_roles": false,
+        "use_apigateway": true,
+        "cors": true,
+
+        "memory_size": 512,
+        "timeout_seconds": 30,
+        "keep_warm": false,
+        "log_level": "INFO",
+
+        "exclude": [
+            "data_generation",
+            "lambda_ingest",
+            "spark_jobs",
+            "glue",
+            "infrastructure",
+            "data_samples",
+            ".venv",
+            ".venv-zappa",
+            ".pytest_cache",
+            ".ruff_cache",
+            ".mypy_cache",
+            ".git",
+            ".github",
+            "__pycache__",
+            "*.ipynb",
+            "*.zip",
+            "*.jsonl",
+            "*.parquet",
+            ".env",
+            ".env.local",
+            ".env.example",
+            ".env.*.local",
+            ".gitignore",
+            "uv.lock",
+            "uv.toml",
+            "pyproject.toml",
+            "README.md"
+        ],
+
+        "environment_variables": {
+            "DB_HOST": "shopstream-dwh.cvlz1em1qc07.us-east-1.rds.amazonaws.com",
+            "DB_PORT": "5432",
+            "DB_NAME": "shopstream_dwh",
+            "DB_USER": "shopstream_admin",
+            "LOG_LEVEL": "INFO"
+        }
+    }
+}

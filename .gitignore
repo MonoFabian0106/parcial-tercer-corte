@@ -11,6 +11,7 @@ MANIFEST
 
 # Virtual environments
 .venv/
+.venv-zappa/
 venv/
 env/
 ENV/
