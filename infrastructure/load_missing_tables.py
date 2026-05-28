@@ -1,4 +1,5 @@
 """Carga las 4 tablas fact faltantes desde S3 Parquet a RDS."""
+
 import io
 import os
 
@@ -25,9 +26,9 @@ BUCKET = "shopstream-processed-mf0106"
 
 METRICS = {
     "device_country": "fact_device_country",
-    "funnel":         "fact_conversion_funnel",
-    "nav_paths":      "fact_nav_paths",
-    "product_gap":    "fact_product_gap",
+    "funnel": "fact_conversion_funnel",
+    "nav_paths": "fact_nav_paths",
+    "product_gap": "fact_product_gap",
 }
 
 for metric, table in METRICS.items():
