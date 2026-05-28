@@ -76,6 +76,7 @@ zappa_settings.local.json
 spark-warehouse/
 metastore_db/
 derby.log
+spark_jobs.zip
 
 # Data (no commitear datasets locales)
 data/
